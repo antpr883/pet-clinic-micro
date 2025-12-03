@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- 
+        MASTER CHANGELOG FILE (SQL format)
+        
+        Це головний файл міграцій Liquibase.
+        Всі SQL міграції додаються через include нижче в хронологічному порядку.
+    -->
+
+    <!-- Version 1.0 - Initial Schema (SQL format) -->
+    <include file="db/changelog/changes/v1.0/000-create-schema.sql"/>
+
+</databaseChangeLog>
+
+

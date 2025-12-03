@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: person-service-testcontainers
+
+  # ========== TEST DATABASE (PostgreSQL via Testcontainers) ==========
+  # DataSource буде автоматично налаштований через @ServiceConnection
+  # в TestcontainersConfig
+  datasource:
+    # URL, username, password будуть автоматично встановлені Testcontainers
+    # через @ServiceConnection
+    driver-class-name: org.postgresql.Driver
+
+  # ========== JPA CONFIGURATION FOR TESTS ==========
+  jpa:
+    hibernate:
+      ddl-auto: none  # Використовуємо Liquibase для міграцій
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: person_schema  # PostgreSQL підтримує схеми!
+
+  # ========== LIQUIBASE (Enabled for tests with Testcontainers) ==========
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: person_schema
+    contexts: test  # Тільки test context (seed-data має тільки dev, тому не виконається)
+
+  # ========== SECURITY (Disabled for tests) ==========
+  security:
+    enabled: false
+
+# ========== LOGGING FOR TESTS ==========
+logging:
+  level:
+    root: WARN
+    com.micro.person: DEBUG
+    org.springframework.test: INFO
+    org.hibernate: WARN
+    org.hibernate.SQL: DEBUG
+    org.testcontainers: INFO
+
+# ========== SPRINGDOC (Disabled for tests) ==========
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+

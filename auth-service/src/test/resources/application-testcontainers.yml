@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: auth-service-testcontainers
+
+  # ========== TEST DATABASE (PostgreSQL via Testcontainers) ==========
+  # DataSource буде автоматично налаштований через @ServiceConnection
+  # в TestcontainersConfig
+  datasource:
+    # URL, username, password будуть автоматично встановлені Testcontainers
+    # через @ServiceConnection
+    driver-class-name: org.postgresql.Driver
+
+  # ========== JPA CONFIGURATION FOR TESTS ==========
+  jpa:
+    hibernate:
+      ddl-auto: none  # Використовуємо Liquibase для міграцій
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: auth_schema  # PostgreSQL підтримує схеми!
+
+  # ========== LIQUIBASE (Enabled for tests with Testcontainers) ==========
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: auth_schema
+    liquibase-schema: auth_schema
+    contexts: test  # Тільки test context
+
+  # ========== JWT CONFIGURATION FOR TESTS ==========
+jwt:
+  issuer: "pet-clinic-auth-test"
+  access-token:
+    expiration-seconds: 900
+  refresh-token:
+    expiration-seconds: 604800
+  signing:
+    algorithm: HS256
+    secret: "test-secret-key-for-testing-only-minimum-32-characters"
+
+# ========== LOGGING FOR TESTS ==========
+logging:
+  level:
+    root: WARN
+    com.micro.auth: DEBUG
+    org.springframework.test: INFO
+    org.hibernate: WARN
+    org.hibernate.SQL: DEBUG
+    org.testcontainers: INFO
+    org.apache.shiro: WARN
+
+# ========== SPRINGDOC (Disabled for tests) ==========
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# ========== API Endpoints ==========
+end:
+  point:
+    api: /api/v1
+    auth: ${end.point.api}/auth
+

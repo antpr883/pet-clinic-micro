@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- 
+        MASTER CHANGELOG FILE (SQL format)
+        
+        Це головний файл міграцій Liquibase.
+        Всі SQL міграції додаються через include нижче в хронологічному порядку.
+    -->
+
+    <!-- Version 1.0 - Initial Schema (SQL format) -->
+    <include file="db/changelog/changes/v1.0/000-create-schema.sql"/>
+    <include file="db/changelog/changes/v1.0/001-create-pet-types-table.sql"/>
+    <include file="db/changelog/changes/v1.0/002-create-pets-table.sql"/>
+    <include file="db/changelog/changes/v1.0/003-create-pet-info-table.sql"/>
+    <include file="db/changelog/changes/v1.0/004-create-indexes.sql"/>
+    <include file="db/changelog/changes/v1.0/005-seed-data.sql"/>
+
+</databaseChangeLog>
+

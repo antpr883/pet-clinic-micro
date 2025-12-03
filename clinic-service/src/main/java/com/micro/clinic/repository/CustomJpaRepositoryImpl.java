@@ -1,0 +1,78 @@
+package com.micro.clinic.repository;
+
+import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphSimpleJpaRepository;
+import com.micro.clinic.data.constants.EntityConstants;
+import com.micro.clinic.data.entities.BaseActiveEntity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+import org.springframework.data.jpa.repository.support.JpaEntityInformation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Optional;
+
+@Transactional(readOnly = true)
+public class CustomJpaRepositoryImpl<T, ID extends Serializable> 
+        extends EntityGraphSimpleJpaRepository<T, ID>
+        implements CustomJpaRepository<T, ID> {
+
+    private final EntityManager entityManager;
+    private final JpaEntityInformation<T, ID> entityInformation;
+
+    public CustomJpaRepositoryImpl(
+            JpaEntityInformation<T, ID> entityInformation,
+            EntityManager entityManager) {
+        super(entityInformation, entityManager);
+        this.entityManager = entityManager;
+        this.entityInformation = entityInformation;
+    }
+
+    @Override
+    @Transactional
+    public Optional<T> softDelete(ID id, com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph entityGraph) {
+        // @Query in interface executes SELECT, here we set active = false
+        // Use EntityManager to get entity with EntityGraph consideration
+        Optional<T> entity = entityGraph != null ? findById(id, entityGraph) : findById(id);
+        if (entity.isPresent() && entity.get() instanceof BaseActiveEntity baseEntity) {
+            baseEntity.setActive(false);
+            T merged = entityManager.merge(entity.get());
+            entityManager.flush(); // Save changes to DB
+            return Optional.of(merged);
+        }
+        return entity;
+    }
+
+    @Override
+    public List<T> findAllActive() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<T> query = cb.createQuery(getDomainClass());
+        Root<T> root = query.from(getDomainClass());
+        
+        if (BaseActiveEntity.class.isAssignableFrom(getDomainClass())) {
+            query.where(cb.equal(root.get(EntityConstants.ACTIVE_FIELD), true));
+        }
+        
+        return entityManager.createQuery(query).getResultList();
+    }
+
+    @Override
+    public boolean isActive(ID id) {
+        return findById(id)
+                .map(e -> e instanceof BaseActiveEntity baseEntity && 
+                         Boolean.TRUE.equals(baseEntity.getActive()))
+                .orElse(false);
+    }
+
+    @Override
+    @Transactional
+    public int softDeleteAll(List<ID> ids, com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph entityGraph) {
+        return (int) ids.stream()
+                .map(id -> softDelete(id, entityGraph))
+                .filter(Optional::isPresent)
+                .count();
+    }
+}
+

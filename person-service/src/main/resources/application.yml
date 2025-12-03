@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: person-service
+
+  profiles:
+    active: dev
+
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
+
+  # Optimized database connection pooling  
+  datasource:
+    hikari:
+      # Connection pool sizing
+      maximum-pool-size: 20           # Max connections in pool
+      minimum-idle: 5                 # Min idle connections 
+      
+      # Connection timeouts
+      connection-timeout: 20000       # 20 seconds to get connection
+      idle-timeout: 300000           # 5 minutes idle timeout
+      max-lifetime: 1200000          # 20 minutes max connection lifetime
+      
+      # Performance optimizations
+      leak-detection-threshold: 60000 # 60 seconds leak detection
+      pool-name: "PersonServiceHikariCP"
+      
+      # Connection validation
+      connection-test-query: "SELECT 1"
+      validation-timeout: 3000        # 3 seconds validation timeout
+
+end:
+  point:
+    api: /api/v1
+    persons: ${end.point.api}/persons
+    contacts: ${end.point.api}/contacts
+    addresses: ${end.point.api}/addresses
+

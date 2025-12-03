@@ -1,0 +1,75 @@
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+bin/
+.apt_generated
+.factorypath
+
+# IDE - VS Code
+.vscode/
+*.code-workspace
+
+# IDE - NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Documentation
+documentation/
+project-technical-documentation/
+*.md
+!README.md
+
+# Environment files
+*.env
+dev.env
+.env.local
+
+# Application local configs
+src/main/resources/application-local.yml
+src/main/resources/application-local.properties
+src/test/resources/application-local.yml
+
+# Test reports
+surefire-reports/
+failsafe-reports/
+test-results/
+
+# Coverage reports
+jacoco.exec
+site/jacoco/
+coverage/
+
+# Generated sources
+generated-sources/
+generated-test-sources/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo

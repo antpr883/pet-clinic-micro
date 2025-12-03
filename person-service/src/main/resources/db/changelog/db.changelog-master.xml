@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- 
+        MASTER CHANGELOG FILE (SQL format)
+        
+        Це головний файл міграцій Liquibase.
+        Всі SQL міграції додаються через include нижче в хронологічному порядку.
+    -->
+
+    <!-- Version 1.0 - Initial Schema (SQL format) -->
+    <include file="db/changelog/changes/v1.0/000-create-schema.sql"/>
+    <include file="db/changelog/changes/v1.0/001-create-persons-table.sql"/>
+    <include file="db/changelog/changes/v1.0/002-create-contacts-table.sql"/>
+    <include file="db/changelog/changes/v1.0/003-create-indexes.sql"/>
+    <include file="db/changelog/changes/v1.0/004-add-person-role.sql"/>
+    <include file="db/changelog/changes/v1.0/005-seed-data.sql"/>
+    <include file="db/changelog/changes/v1.0/007-refactor-contacts-structure.sql"/>
+    <include file="db/changelog/changes/v1.0/008-create-addresses-table.sql"/>
+    <include file="db/changelog/changes/v1.0/010-fix-contact-type-enum-values.sql"/>
+    <include file="db/changelog/changes/v1.0/009-migrate-home-contacts-to-addresses.sql"/>
+    <include file="db/changelog/changes/v1.0/011-add-date-of-birth-to-persons.sql"/>
+
+</databaseChangeLog>
+

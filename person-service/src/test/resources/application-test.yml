@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: person-service-test
+
+  # ========== TEST DATABASE (H2 In-Memory) ==========
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+
+  # ========== JPA CONFIGURATION FOR TESTS ==========
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.H2Dialect
+        # H2 не підтримує схеми, тому використовуємо кастомний physical_naming_strategy для ігнорування schema
+        physical_naming_strategy: com.micro.person.config.TestPhysicalNamingStrategy
+
+  # ========== LIQUIBASE (Disabled for tests) ==========
+  liquibase:
+    enabled: false
+
+  # ========== SECURITY (Disabled for tests) ==========
+  security:
+    enabled: false
+
+  # ========== H2 CONSOLE (Enabled for debugging) ==========
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# ========== LOGGING FOR TESTS ==========
+logging:
+  level:
+    root: WARN
+    com.micro.person: DEBUG
+    org.springframework.test: INFO
+    org.hibernate: WARN
+    org.hibernate.SQL: DEBUG
+
+# ========== SPRINGDOC (Disabled for tests) ==========
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+

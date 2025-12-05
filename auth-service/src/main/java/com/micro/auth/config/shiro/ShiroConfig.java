@@ -1,18 +1,21 @@
 package com.micro.auth.config.shiro;
 
-import org.apache.shiro.SecurityUtils;
+import com.micro.auth.service.jwt.JwtTokenService;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
+import org.apache.shiro.mgt.DefaultSubjectDAO;
+import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -32,10 +35,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class ShiroConfig implements WebMvcConfigurer {
 
     @Autowired
-    private JwtShiroInterceptor jwtShiroInterceptor;
+    private ApplicationContext applicationContext;
     
     @Autowired
-    private ApplicationContext applicationContext;
+    private JwtTokenService jwtTokenService;
+
+    /**
+     * Створює JwtShiroFilter bean.
+     * 
+     * ВАЖЛИВО: НЕ додаємо @Component до JwtShiroFilter, щоб уникнути автоматичної реєстрації.
+     * Фільтр реєструється вручну через FilterRegistrationBean для контролю порядку виконання.
+     */
+    @Bean
+    public JwtShiroFilter jwtShiroFilter() {
+        return new JwtShiroFilter(jwtTokenService);
+    }
 
     /**
      * Створює та налаштовує SecurityManager - головний компонент Shiro.
@@ -56,11 +70,19 @@ public class ShiroConfig implements WebMvcConfigurer {
         // Встановлюємо наш кастомний Realm для аутентифікації та авторизації
         securityManager.setRealm(jpaUserRealm);
         
-        // Налаштовуємо SessionManager для stateless архітектури
+        // BEST PRACTICE: Налаштовуємо SessionManager для stateless архітектури
         DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
         sessionManager.setSessionValidationSchedulerEnabled(false);  // Вимкнути валідацію сесій
         sessionManager.setSessionIdCookieEnabled(false);              // Вимкнути cookie для сесій
         securityManager.setSessionManager(sessionManager);
+        
+        // BEST PRACTICE: Вимкнути session storage для повного stateless режиму
+        // Це гарантує, що Shiro не зберігає сесії в пам'яті
+        DefaultSubjectDAO subjectDAO = new DefaultSubjectDAO();
+        DefaultSessionStorageEvaluator sessionStorageEvaluator = new DefaultSessionStorageEvaluator();
+        sessionStorageEvaluator.setSessionStorageEnabled(false);  // Вимкнути зберігання сесій
+        subjectDAO.setSessionStorageEvaluator(sessionStorageEvaluator);
+        securityManager.setSubjectDAO(subjectDAO);
         
         return securityManager;
     }
@@ -98,6 +120,26 @@ public class ShiroConfig implements WebMvcConfigurer {
         return advisor;
     }
 
+    /**
+     * Реєструє JwtShiroFilter з високим пріоритетом, щоб він виконувався ПЕРЕД Shiro фільтром.
+     * 
+     * ВАЖЛИВО: 
+     * - FilterRegistrationBean дозволяє встановити порядок виконання фільтрів
+     * - Встановлюємо Order.HIGHEST_PRECEDENCE, щоб JwtShiroFilter виконувався першим
+     * - Вимкнуто автоматичну реєстрацію через setEnabled(false) для інших реєстрацій
+     * - JwtShiroFilter має shouldNotFilter(), який автоматично виключає публічні endpoints
+     */
+    @Bean
+    public FilterRegistrationBean<JwtShiroFilter> jwtShiroFilterRegistration(JwtShiroFilter jwtShiroFilter) {
+        FilterRegistrationBean<JwtShiroFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(jwtShiroFilter);
+        registration.addUrlPatterns("/*"); // Реєструємо для всіх шляхів, shouldNotFilter() відфільтрує
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE); // Виконується ПЕРЕД Shiro фільтром
+        registration.setName("jwtShiroFilter");
+        registration.setEnabled(true);
+        return registration;
+    }
+
     @Bean
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
         DefaultShiroFilterChainDefinition chainDefinition = new DefaultShiroFilterChainDefinition();
@@ -126,17 +168,15 @@ public class ShiroConfig implements WebMvcConfigurer {
         chainDefinition.addPathDefinition("/login", "anon");
         chainDefinition.addPathDefinition("/login.html", "anon");
 
+        // Захищені auth endpoints - JwtShiroFilter (OncePerRequestFilter) встановлює Subject
+        // перед виконанням Shiro фільтра, тому використовуємо authc
+        chainDefinition.addPathDefinition("/api/v1/auth/**", "authc");
+
         // Всі інші endpoints потребують аутентифікації (authc = authenticated)
         chainDefinition.addPathDefinition("/**", "authc");
 
         return chainDefinition;
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(jwtShiroInterceptor)
-                .addPathPatterns("/api/v1/auth/**")
-                .excludePathPatterns("/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout");
-    }
 }
 

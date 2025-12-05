@@ -29,6 +29,14 @@ spring:
       connection-test-query: "SELECT 1"
       validation-timeout: 3000        # 3 seconds validation timeout
 
+# ========== JWT Configuration ==========
+jwt:
+  issuer: ${JWT_ISSUER:pet-clinic-auth}
+  signing:
+    secret: ${JWT_SECRET:super-secret-key-change-in-production}
+  security:
+    enabled: true
+
 end:
   point:
     api: /api/v1

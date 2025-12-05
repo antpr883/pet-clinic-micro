@@ -129,6 +129,13 @@
             <artifactId>spring-statemachine-starter</artifactId>
             <version>4.0.0</version>
         </dependency>
+        
+        <!-- Auth Security Client - JWT validation for microservices -->
+        <dependency>
+            <groupId>com.micro.security</groupId>
+            <artifactId>auth-security-client</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

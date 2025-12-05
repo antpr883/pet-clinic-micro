@@ -60,12 +60,14 @@ public class JpaUserRealm extends AuthorizingRealm {
             JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) token;
             Long userId = jwtToken.getUserId();
             
-            log.debug("Authenticating user via JWT: {}", userId);
+            log.info("JpaUserRealm: Authenticating user via JWT: {}", userId);
             
             // BEST PRACTICE: Завантажуємо користувача з ролями та пермішенами одним запитом через Entity Graph
             // Використовуємо UserEntityGraphService для уникнення дублювання коду
             UserEntity user = userEntityGraphService.findByIdWithRolesAndPermissions(userId)
                     .orElseThrow(() -> new UnknownAccountException("User not found: " + userId));
+            
+            log.info("JpaUserRealm: User found: {} (id: {})", user.getUsername(), user.getId());
             
             if (!Boolean.TRUE.equals(user.getActive())) {
                 throw new DisabledAccountException("User is disabled: " + userId);
@@ -74,11 +76,17 @@ public class JpaUserRealm extends AuthorizingRealm {
             // Для JWT токенів не перевіряємо пароль - токен вже валідний
             // BEST PRACTICE: Зберігаємо UserEntity як principal замість userId
             // Це дозволяє використовувати дані користувача без повторних запитів до БД
-            return new SimpleAuthenticationInfo(
+            SimpleAuthenticationInfo authInfo = new SimpleAuthenticationInfo(
                     user,                    // principal (UserEntity) - зберігаємо повну сутність
                     jwtToken.getJwtToken(),  // credentials (JWT token)
                     getName()
             );
+            
+            log.info("JpaUserRealm: Returning AuthenticationInfo with principal: {} (type: {})", 
+                    authInfo.getPrincipals().getPrimaryPrincipal(), 
+                    authInfo.getPrincipals().getPrimaryPrincipal().getClass().getSimpleName());
+            
+            return authInfo;
         }
 
         // ============================================================
@@ -166,6 +174,29 @@ public class JpaUserRealm extends AuthorizingRealm {
         info.setRoles(roles);
         info.setStringPermissions(permissions);
         return info;
+    }
+
+    /**
+     * Перевизначаємо перевірку credentials для JWT токенів.
+     * 
+     * Для JWT токенів не потрібно перевіряти пароль через HashedCredentialsMatcher,
+     * оскільки JWT токен вже валідований в JwtShiroFilter перед викликом login().
+     * 
+     * Для UsernamePasswordToken використовується стандартний HashedCredentialsMatcher.
+     */
+    @Override
+    protected void assertCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) 
+            throws AuthenticationException {
+        // Для JWT токенів не перевіряємо credentials - токен вже валідний
+        if (token instanceof JwtAuthenticationToken) {
+            log.info("JpaUserRealm: Skipping credentials check for JWT token - token already validated");
+            log.info("JpaUserRealm: AuthenticationInfo principal: {}", info.getPrincipals().getPrimaryPrincipal());
+            return; // JWT токен вже валідований в JwtShiroFilter
+        }
+        
+        // Для UsernamePasswordToken використовуємо стандартну перевірку через HashedCredentialsMatcher
+        log.debug("JpaUserRealm: Using HashedCredentialsMatcher for UsernamePasswordToken");
+        super.assertCredentialsMatch(token, info);
     }
 
     private HashedCredentialsMatcher passwordMatcher() {

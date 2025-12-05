@@ -8,6 +8,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -28,6 +29,30 @@ public class ControllerExceptionHandler {
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message(ex.getMessage())
                 .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ErrorResponse> handlePropertyReferenceException(
+            PropertyReferenceException ex, WebRequest request) {
+        log.error("Invalid sort property: {}", ex.getMessage());
+        
+        String message = ex.getMessage();
+        if (message != null && message.contains("sort")) {
+            message = "Invalid sort parameter. " +
+                    "Available sort fields: id, username, email, active, createdAt, updatedAt. " +
+                    "Use query parameters: ?sort=id or ?sort=username,asc (not JSON body). " +
+                    "Original error: " + ex.getMessage();
+        }
+        
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(message)
+                .path(request.getDescription(false).replace("uri=", ""))
+                .details("Use query parameters for sorting, not JSON body. Example: GET /api/v1/auth/users?page=1&size=20&sort=id")
                 .build();
         return ResponseEntity.badRequest().body(error);
     }

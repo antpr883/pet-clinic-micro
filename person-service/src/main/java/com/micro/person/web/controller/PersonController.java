@@ -10,6 +10,7 @@ import com.micro.person.service.person.PersonService;
 import com.micro.person.web.controller.api.PersonControllerApi;
 import com.micro.person.web.response.AppResponse;
 import com.micro.person.web.response.PaginationResponse;
+import com.micro.security.client.permissions.Permissions;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,6 +52,7 @@ public class PersonController implements PersonControllerApi {
     private final PersonService personService;
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<PersonFullDto>> getById(@PathVariable Long id) {
         log.debug("Getting full person by id: {}", id);
         PersonFullDto dto = personService.findFullById(id);
@@ -57,6 +60,7 @@ public class PersonController implements PersonControllerApi {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<PersonPreviewDto>> getPreviewById(@PathVariable Long id) {
         log.debug("Getting preview person by id: {}", id);
         PersonPreviewDto dto = personService.findPreviewById(id);
@@ -64,6 +68,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<PersonFullExtendedDto>> getFullExtendedById(@PathVariable Long id) {
         log.debug("Getting full extended person by id: {}", id);
         PersonFullExtendedDto dto = personService.findFullExtendedById(id);
@@ -71,6 +76,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<PersonFullPreviewDto>> getFullPreviewById(@PathVariable Long id) {
         log.debug("Getting full preview person by id: {}", id);
         PersonFullPreviewDto dto = personService.findFullPreviewById(id);
@@ -78,6 +84,7 @@ public class PersonController implements PersonControllerApi {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_WRITE + "')")
     public ResponseEntity<AppResponse<PersonFullDto>> create(@Valid @RequestBody PersonCreateDto personDto) {
         log.debug("Creating person: {}", personDto);
         PersonFullDto created = personService.create(personDto);
@@ -86,6 +93,7 @@ public class PersonController implements PersonControllerApi {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_WRITE + "')")
     public ResponseEntity<AppResponse<PersonFullDto>> update(
             @PathVariable Long id,
             @Valid @RequestBody PersonUpdateDto personDto) {
@@ -95,6 +103,7 @@ public class PersonController implements PersonControllerApi {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_WRITE + "')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
             @RequestParam(defaultValue = "false") boolean hard) {
@@ -110,6 +119,7 @@ public class PersonController implements PersonControllerApi {
     // ========== Full API (full information) ==========
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<List<PersonFullDto>>> getAll() {
         log.debug("Getting all full persons");
         List<PersonFullDto> dtos = personService.findAllFull();
@@ -117,6 +127,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<PaginationResponse<PersonFullDto>> getAllWithPagination(
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         log.debug("Getting all full persons with pagination: page={}, size={}", 
@@ -128,6 +139,7 @@ public class PersonController implements PersonControllerApi {
     // ========== Preview API (short view) ==========
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<List<PersonPreviewDto>>> getAllPreviews() {
         log.debug("Getting all preview persons");
         List<PersonPreviewDto> dtos = personService.findAllPreviews();
@@ -135,6 +147,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<PaginationResponse<PersonPreviewDto>> getAllPreviewsWithPagination(
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         log.debug("Getting all preview persons with pagination: page={}, size={}", 
@@ -146,6 +159,7 @@ public class PersonController implements PersonControllerApi {
     // ========== Full Preview API (aggregated view) ==========
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<List<PersonFullPreviewDto>>> getAllFullPreviews() {
         log.debug("Getting all full preview persons");
         List<PersonFullPreviewDto> dtos = personService.findAllFullPreviews();
@@ -153,6 +167,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<PaginationResponse<PersonFullPreviewDto>> getAllFullPreviewsWithPagination(
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         log.debug("Getting all full preview persons with pagination: page={}, size={}", 
@@ -164,6 +179,7 @@ public class PersonController implements PersonControllerApi {
     // ========== RSQL Search (Single search mechanism) ==========
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<List<PersonFullDto>>> search(
             @RequestParam String rsqlQuery,
             @RequestParam(required = false) String[] graphAttributes) {
@@ -174,6 +190,7 @@ public class PersonController implements PersonControllerApi {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<PaginationResponse<PersonFullDto>> searchWithPagination(
             @RequestParam String rsqlQuery,
             @PageableDefault(size = 20, sort = "id") Pageable pageable,
@@ -186,6 +203,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<List<PersonPreviewDto>>> searchPreview(@RequestParam String rsqlQuery) {
         log.debug("RSQL search preview with query: {}", rsqlQuery);
         List<PersonPreviewDto> dtos = personService.searchPreview(rsqlQuery);
@@ -193,6 +211,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<PaginationResponse<PersonPreviewDto>> searchPreviewWithPagination(
             @RequestParam String rsqlQuery,
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
@@ -203,6 +222,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<List<PersonFullPreviewDto>>> searchFullPreview(@RequestParam String rsqlQuery) {
         log.debug("RSQL search full preview with query: {}", rsqlQuery);
         List<PersonFullPreviewDto> dtos = personService.searchFullPreview(rsqlQuery);
@@ -210,6 +230,7 @@ public class PersonController implements PersonControllerApi {
     }
     
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<PaginationResponse<PersonFullPreviewDto>> searchFullPreviewWithPagination(
             @RequestParam String rsqlQuery,
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
@@ -220,8 +241,11 @@ public class PersonController implements PersonControllerApi {
     }
 
     // ========== Microservice Integration Methods ==========
+    // Ці методи використовуються для service-to-service викликів
+    // Можуть використовувати ORCHESTRATOR роль або спеціальні permissions
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<Map<Long, Boolean>>> checkPersonsExist(
             @RequestBody List<Long> ids) {
         log.debug("Checking existence of persons: {}", ids);
@@ -230,6 +254,7 @@ public class PersonController implements PersonControllerApi {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<List<PersonPreviewDto>>> getPreviewsByIds(
             @RequestBody List<Long> ids) {
         log.debug("Getting previews for persons: {}", ids);
@@ -238,6 +263,7 @@ public class PersonController implements PersonControllerApi {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('" + Permissions.PERSON_READ + "')")
     public ResponseEntity<AppResponse<Long>> countActive() {
         log.debug("Counting active persons");
         long count = personService.countActive();
